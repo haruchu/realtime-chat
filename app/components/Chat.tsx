@@ -20,7 +20,6 @@ export default function ChatComponent({ data }: iAppProps) {
     <div className="p-6 flex-grow max-h-screen overflow-y-auto py-32">
       <div className="flex flex-col gap-4">
         {totalComments.map((message, index) => {
-          console.log(message);
           return (
             <div key={index}>
               <div className="flex items-center">

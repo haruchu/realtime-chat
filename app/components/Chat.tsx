@@ -1,7 +1,8 @@
 "use client";
 
 import Image from "next/image";
-import { useState } from "react";
+import Pusher from "pusher-js";
+import { useEffect, useRef, useState } from "react";
 
 interface iAppProps {
   data: {
@@ -15,7 +16,41 @@ interface iAppProps {
 
 export default function ChatComponent({ data }: iAppProps) {
   const [totalComments, setTotalComments] = useState(data);
+  const messageEndRef = useRef<HTMLInputElement>(null);
+  // var pusher = new Pusher(process.env.NEXT_PUBLIC_PUSHER_KEY as string, {
+  //   cluster: "ap3",
+  // });
+  // var channel = pusher.subscribe("haru-channel");
+  // channel.bind("haru-event", function (data: any) {
+  //   const parsedComments = JSON.parse(data.message);
 
+  //   setTotalComments((prev) => [...prev, parsedComments]);
+  // });
+
+  useEffect(() => {
+    var pusher = new Pusher(process.env.NEXT_PUBLIC_PUSHER_KEY as string, {
+      cluster: "ap3",
+    });
+
+    var channel = pusher.subscribe("haru-channel");
+    channel.bind("haru-event", function (data: any) {
+      const parsedComments = JSON.parse(data.message);
+
+      setTotalComments((prev) => [...prev, parsedComments]);
+    });
+
+    return () => {
+      pusher.unsubscribe("haru-channel");
+    };
+  }, []);
+
+  const scrollTobottom = () => {
+    messageEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  };
+
+  useEffect(() => {
+    scrollTobottom();
+  }, [totalComments]);
   return (
     <div className="p-6 flex-grow max-h-screen overflow-y-auto py-32">
       <div className="flex flex-col gap-4">
@@ -41,6 +76,7 @@ export default function ChatComponent({ data }: iAppProps) {
             </div>
           );
         })}
+        <div ref={messageEndRef}></div>
       </div>
     </div>
   );
